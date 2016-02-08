@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 )
 
@@ -14,18 +13,16 @@ func main() {
 	}
 
 	// start a websocket-based Real Time API session
-	ws, id := slackConnect(os.Args[1])
+	ws, _ := slackConnect(os.Args[1])
 	fmt.Println("mybot ready, ^C exits")
 
 	for {
 		// read each incoming message
-		m, err := getMessage(ws)
+		_, err := getMessage(ws)
 
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		// Send the message to ramsey.
 
 		// see if we're mentioned
 		/*if m.Type == "message" && strings.HasPrefix(m.Text, "<@"+id+">") {

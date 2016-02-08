@@ -7,32 +7,43 @@ import (
 
 // Generic Bot Struct
 type Bot struct {
-	name     string
-	keywords []string
-	message  Message
-	con      websocket.Conn
+	name      string
+	keywords  []string
+	message   Message
+	actionKey string
+	con       *websocket.Conn
+	actions   map[string]Action
 }
 
-// Create a new bot
-func NewBot(con websocket.Conn, name string) {
-	return &Bot{
-		name,
-	}
+// Adds an action to the bot
+func (b *Bot) addAction(a Action) {
+	b.actions[a.keyword] = a
 }
 
+// Responds to a message
 func (b *Bot) respond(m Message) {
 	b.message = m
 
 	// We only want to respond to messages
 	if m.Type == "message" {
 
-		if b.isMentioned || b.hasKeyword {
+		// We were mentioned in a message
+		if b.isMentioned(m) {
 
-			if b.actionKey == nil {
+			// check if we also found a keyword in the message
+			if b.hasKeyword(m) {
+				b.actions[b.actionKey].run(b, m)
 				return
 			}
 
-			// Here we have an action key
+			// Here we have no keyword but we were mentioned
+			return
+		}
+
+		// We found a keyword
+		if b.hasKeyword(m) {
+			// We have an action to perform
+			b.actions[b.actionKey].run(b, m)
 		}
 	}
 }
