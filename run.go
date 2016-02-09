@@ -6,6 +6,34 @@ import (
 	"os"
 )
 
+// The Ramsey Bot
+var ramsey = &Bot{
+	defMsg: "What are you? An idiot sandwich",
+}
+
+// Default Action Dictionary
+var actionDict = &ActionDictionary{
+	bot: ramsey,
+}
+
+var wowAction = Action{
+	name:    "Wow response",
+	keyword: "wow",
+	perform: func(b *Bot, m Message) {
+		m.Text = "wow wow wow"
+		postMessage(b.con, m)
+	},
+}
+
+var nsfwAction = Action{
+	name:    "Not Safe For Work",
+	keyword: "nsfw",
+	perform: func(b *Bot, m Message) {
+		m.Text = ""
+		postMessage(b.con, m)
+	},
+}
+
 func main() {
 	if len(os.Args) != 2 {
 		fmt.Fprintf(os.Stderr, "usage: mybot slack-bot-token\n")
@@ -13,33 +41,26 @@ func main() {
 	}
 
 	// start a websocket-based Real Time API session
-	ws, _ := slackConnect(os.Args[1])
+	ws, id := slackConnect(os.Args[1])
 	fmt.Println("mybot ready, ^C exits")
+
+	ramsey.name = id
+	ramsey.con = ws
+
+	actionDict.addToBot()
 
 	for {
 		// read each incoming message
-		_, err := getMessage(ws)
+		m, err := getMessage(ws)
 
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		// see if we're mentioned
-		/*if m.Type == "message" && strings.HasPrefix(m.Text, "<@"+id+">") {
-			// if so try to parse if
-			parts := strings.Fields(m.Text)
-			if len(parts) == 3 && parts[1] == "stock" {
-				// looks good, get the quote and reply with the result
-				go func(m Message) {
-					m.Text = getQuote(parts[2])
-					postMessage(ws, m)
-				}(m)
-				// NOTE: the Message object is copied, this is intentional
-			} else {
-				// huh?
-				m.Text = fmt.Sprintf("sorry, that does not compute\n")
-				postMessage(ws, m)
-			}
-		}*/
+		ramsey.respond(m)
 	}
+}
+
+func addActions() {
+	actionDict.addAction(wowAction)
 }

@@ -9,10 +9,10 @@ import (
 type Bot struct {
 	name      string
 	keywords  []string
-	message   Message
 	actionKey string
 	con       *websocket.Conn
 	actions   map[string]Action
+	defMsg    string
 }
 
 // Adds an action to the bot
@@ -22,8 +22,6 @@ func (b *Bot) addAction(a Action) {
 
 // Responds to a message
 func (b *Bot) respond(m Message) {
-	b.message = m
-
 	// We only want to respond to messages
 	if m.Type == "message" {
 
@@ -37,6 +35,10 @@ func (b *Bot) respond(m Message) {
 			}
 
 			// Here we have no keyword but we were mentioned
+			if b.defMsg != "" {
+				m.Text = b.defMsg
+				postMessage(b.con, m)
+			}
 			return
 		}
 

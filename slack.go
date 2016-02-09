@@ -3,12 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"golang.org/x/net/websocket"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"sync/atomic"
-
-	"golang.org/x/net/websocket"
 )
 
 // These two structures represent the response of the Slack API rtm.start.
